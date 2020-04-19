@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head lang="ru">
+        <title>{{ title }}</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" 
+              integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" 
+              crossorigin="anonymous">
+    </head>
+    <body>
+        <div style="width: 80vw; margin: auto; padding: 10px; font-family: Verdana"
+             class="border border-light">
+            <div class="row">
+                <div class="col">
+                    <h1><span class="badge badge-warning" style="float: left">ЯЕда</span></h1>
+                    <a class="btn btn-success" href="/basket" style="margin-left: 20px">Корзина 
+                        <span class="badge badge-light">{{ basket_len }}</span>
+                    </a>
+                    <a class="btn btn-info" href="/orders" style="margin-left: 20px">Заказы</a>
+                </div>
+                <div class="col">
+                    {% if logged_in %}
+                    <a class="btn btn-danger" href="/logout" style="float: right; margin-left: 10px">Выйти</a>
+                    <a class="btn btn-primary" href="/restaurant" style="float: right">Личный кабинет</a>
+                    {% else %}
+                    <a class="btn btn-success" href="/register" style="float: right">Зарегистрировать ресторан</a>
+                    <a class="btn btn-primary" href="/login" style="float: right; margin-right: 5px">Войти</a>
+                    {% endif %}
+                </div>
+            </div>
+            <hr>
+            {% block content %}
+            {% endblock %}
+        </div>
+    </body>
+</html>

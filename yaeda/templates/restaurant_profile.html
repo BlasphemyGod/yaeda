@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 align="center">Ресторан {{ restaurant.name }}</h2>
+<hr>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h5 align="center"><b>Контактный телефон: </b>{{ restaurant.phone_number }}</h5>
+            <h5 align="center"><b>Адрес: </b>{{ restaurant.address }}</h5>
+        </div>
+        <div class="col"></div>
+    </div>
+
+    {% if owner %}
+    <center><a class="btn btn-warning" href='/restaurant/edit'>Изменить</a></center>
+    <hr>
+    {% endif %}
+
+    <h3 align="center">Меню</h3>
+
+    {% if owner %}
+    <center>
+    <a class="btn btn-primary" href="/menu/add">Дополнить меню</a>
+    </center>
+    {% endif %}
+
+    <div class="container">
+        {% for product in restaurant.menu %}
+        {% if loop.index % 4 == 1 %}
+        <div class="row">
+        {% endif %}
+                <div class="col-3 border rounded border-light" style="margin: 5px">
+                    <h4 align="center">{{ product.name }}</h4>
+                    <hr>
+                    <span>{{ product.description }}</span>
+                    <hr>
+                    <h5 align="center">{{ product.price }} р.</h5>
+                    <center>
+                        <a href="/basket/add/{{ product.id }}" class="btn btn-primary">Добавить в корзину</a>
+                        {% if owner %}
+                        <a href="/menu/remove/{{ product.id }}" class="btn btn-danger" style="margin-top: 10px">Удалить</a> 
+                        {% endif %}
+                    </center>
+                </div>
+        {% if loop.index % 4 == 0 %}
+        </div>
+        {% endif %}
+        {% if loop.last and loop.index % 4 != 0 %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

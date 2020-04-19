@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 align="center">Заказы</h2>
+<hr>
+<form method="POST" style="width: 50%; margin-left: auto; margin-right: auto; padding: 10px">
+    {{ form.csrf_token }}
+
+    <div class="form-group">
+        {{ form.phone_number.label }}
+        {{ form.phone_number(class="form-control")}}
+
+        {% for error in form.phone_number.errors %}
+        <span class="badge badge-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Отправить</button>
+</form>
+<hr>
+<div class="container">
+    {% if message %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col">
+            <h3 align="center">Выполненные</h3>
+            {% for order in ready_orders|reverse %}
+            <hr>
+            <h5 align="center">{{ order.date }}</h5>
+            {% for order_item in order.order_items %}
+            <h6>> {{ order_item.product.name }} {{order_item.count }}x{{ order_item.product.price }}</h6>
+            {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="col">
+            <h3 align="center">В процессе</h3>
+            {% for order in not_ready_orders|reverse %}
+            <hr>
+            <h5 align="center">{{ order.date }}</h5>
+            {% for order_item in order.order_items %}
+            <h6>> {{ order_item.product.name }} {{ order_item.count }}x{{ order_item.product.price }}</h6>
+            {% endfor %}
+            <h6 align="center">Статус: {{ order.state }}</h6>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 align="center">Корзина</h2>
+<hr>
+<div class="container">
+    {% for product, product_count in products %}
+    <div class="row">
+        <div class="col">
+            <h5>{{ product.name }}</h5>
+        </div>
+        <div class="col">
+            <h5>{{ product.price }} р.</h5>
+        </div>
+        <div class="col">
+            <h4 align="right"><a href="/basket/add/{{ product.id }}">+</a></h4>
+        </div>
+        <div class="col">
+            <h5 align="center">{{ product_count }}</h5>
+        </div>
+        <div class="col">
+            <h4 align="left"><a href="/basket/remove/{{ product.id }}">—</a></h4>
+        </div>
+        <div class="col">
+            <h4 align="right"><a style="color: red" href="/basket/remove/{{ product.id }}/all">⨯</a></h4>
+        </div>
+    </div>
+    <hr>
+    {% endfor %}
+    <center>
+        <a class="btn btn-primary" href="/order/make">Сделать заказ</a>
+    </center>
+</div>
+{% endblock %}

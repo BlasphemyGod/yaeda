@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 align="center">Оформление заказа</h2>
+<form method="POST" style="width: 50%; margin-left: auto; margin-right: auto; padding: 10px;">
+    {{ form.csrf_token }}
+    {% for field in form %}
+    <div class="form-group">
+        {{ field.label }}
+        {{ field(class="form-control")}}
+
+        {% for error in field.errors %}
+        <span class="badge badge-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Сделать заказ</button>
+    {% if message %}
+    <div role="alert" class="alert alert-{% if success %}success{% else %}danger{% endif %}" style="margin: 5px;">
+        {{ message }}
+    </div>
+    {% endif %}
+</form>
+{% endblock %}
