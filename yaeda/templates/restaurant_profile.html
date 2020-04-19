@@ -9,11 +9,21 @@
             <h5 align="center"><b>Контактный телефон: </b>{{ restaurant.phone_number }}</h5>
             <h5 align="center"><b>Адрес: </b>{{ restaurant.address }}</h5>
         </div>
-        <div class="col"></div>
     </div>
 
     {% if owner %}
-    <center><a class="btn btn-warning" href='/restaurant/edit'>Изменить</a></center>
+    <div class="row">
+        <div class="col">
+            <center>
+                <a class="btn btn-warning" href="/restaurant/edit">Изменить</a>
+            </center>
+        </div>
+        <div class="col">
+            <center>
+                <a class="btn btn-primary" href="/restaurant/orders">Заказы</a>
+            </center>
+        </div>
+    </div>
     <hr>
     {% endif %}
 

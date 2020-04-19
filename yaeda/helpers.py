@@ -1,8 +1,9 @@
 import asks
 import math
 
-from quart import session
+from quart import session, redirect, url_for
 
+from .db import db_session
 from .db.models import Restaurant
 
 
@@ -10,7 +11,7 @@ def logged_in():
     return session.get('restaurant_id', 0)
 
 
-def get_current_restaurant(db_session):
+def get_current_restaurant():
     return db_session.query(Restaurant).filter(Restaurant.id == session['restaurant_id']).first()
 
 

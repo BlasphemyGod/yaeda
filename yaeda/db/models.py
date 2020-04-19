@@ -31,6 +31,7 @@ class Restaurant(Base):
     password = Column(String, nullable=False)
     
     menu = relation('Product', back_populates='restaurant')
+    orders = relation('Order', back_populates='restaurant')
     
     
 class Product(Base):
@@ -65,10 +66,12 @@ class Order(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     customer_id = Column(Integer, ForeignKey('users.id'))
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
     
     destination = Column(String, nullable=False)
     state = Column(String, default='В обработке')
     date = Column(DateTime, default=datetime.now)
     
     customer = relation(Customer, back_populates='orders')
+    restaurant = relation(Restaurant, back_populates='orders')
     order_items = relation(OrderItem, back_populates='order')

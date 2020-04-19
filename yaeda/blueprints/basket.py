@@ -2,7 +2,7 @@ from quart import blueprints, abort, url_for, session, render_template, redirect
 from collections import Counter
 
 from yaeda.db.models import Product
-from yaeda.db import Session
+from yaeda.db import db_session
 from yaeda.helpers import logged_in, basket_len
 
 
@@ -19,8 +19,6 @@ async def basket_clear():
 
 @blueprint.route('/basket/add/<int:product_id>')
 async def basket_add(product_id):
-    db_session = Session()
-    
     product = db_session.query(Product).get(product_id)
     
     if not product:
@@ -85,8 +83,6 @@ async def basket_remove_all(product_id):
 async def basket():
     if 'basket' not in session:
         session['basket'] = dict()
-        
-    db_session = Session()
     
     products = list()
     

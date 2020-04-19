@@ -2,7 +2,7 @@ from quart import blueprints, redirect, url_for, request, render_template, abort
 
 from yaeda.forms import ProductForm
 from yaeda.helpers import logged_in, get_current_restaurant, basket_len
-from yaeda.db import Session
+from yaeda.db import db_session
 from yaeda.db.models import Product
 
 
@@ -13,15 +13,13 @@ blueprint = blueprints.Blueprint('menu', __name__)
 async def menu_remove(product_id):
     if not logged_in():
         return redirect(url_for('login'))
-
-    db_session = Session()
     
     product = db_session.query(Product).get(product_id)
     
     if not product:
         abort(404)
     
-    if product.restaurant.id != get_current_restaurant(db_session).id:
+    if product.restaurant.id != get_current_restaurant().id:
         abort(403)
         
     db_session.delete(product)
@@ -39,8 +37,7 @@ async def menu_add():
         form = ProductForm(await request.form)
         
         if form.validate():
-            db_session = Session()
-            restaurant = get_current_restaurant(db_session)
+            restaurant = get_current_restaurant()
             
             product = Product(name=form.name.data,
                               price=form.price.data,

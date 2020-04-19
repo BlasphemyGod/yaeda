@@ -10,3 +10,4 @@ engine = sqlalchemy.create_engine(os.environ.get('DATABASE_URL', 'sqlite:///:mem
 Base.metadata.create_all(engine)
 
 Session = orm.sessionmaker(engine)
+db_session = Session()

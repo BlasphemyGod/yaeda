@@ -30,6 +30,7 @@
             <h3 align="center">Выполненные</h3>
             {% for order in ready_orders|reverse %}
             <hr>
+            <h5 align="center">{{ order.restaurant.name }}</h5>
             <h5 align="center">{{ order.date }}</h5>
             {% for order_item in order.order_items %}
             <h6>> {{ order_item.product.name }} {{order_item.count }}x{{ order_item.product.price }}</h6>
@@ -40,6 +41,7 @@
             <h3 align="center">В процессе</h3>
             {% for order in not_ready_orders|reverse %}
             <hr>
+            <h5 align="center">{{ order.restaurant.name }}</h5>
             <h5 align="center">{{ order.date }}</h5>
             {% for order_item in order.order_items %}
             <h6>> {{ order_item.product.name }} {{ order_item.count }}x{{ order_item.product.price }}</h6>

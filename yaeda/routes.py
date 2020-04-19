@@ -2,7 +2,7 @@ from quart import render_template, request, session, url_for, redirect, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import app
-from .db import Session
+from .db import db_session
 from .db.models import Customer, Restaurant, Order
 from .forms import RestaurantRegisterForm, RestaurantLoginForm, RestaurantEditForm
 from .helpers import get_current_restaurant, logged_in, basket_len
@@ -23,7 +23,6 @@ async def register():
                                     serve_area=form.serve_area.data,
                                     login=form.login.data,
                                     password=generate_password_hash(form.password.data))
-            db_session = Session()
             
             db_session.add(restaurant)
             db_session.commit()
@@ -48,7 +47,6 @@ async def login():
         form = RestaurantLoginForm(await request.form)
         
         if form.validate():
-            db_session = Session()
             restaurant = db_session.query(Restaurant).filter(Restaurant.login == form.login.data).first()
             
             if not restaurant:
@@ -85,21 +83,18 @@ async def logout():
 @app.route('/')
 @app.route('/home')
 async def home():
-    db_session = Session()
     return await render_template('home.html', title='Главная страница', logged_in=logged_in(),
-                                 restaurant=(get_current_restaurant(db_session) if 'restaurant' in session else None),
+                                 restaurant=(get_current_restaurant() if 'restaurant' in session else None),
                                  basket_len=basket_len())
 
 
 @app.route('/restaurant')
 @app.route('/restaurant/<int:restaurant_id>')
 async def restaurant(restaurant_id=0):
-    db_session = Session()
-    
     if not restaurant_id:
         if 'restaurant_id' not in session:
             return redirect(url_for('login'))
-        restaurant = get_current_restaurant(db_session)
+        restaurant = get_current_restaurant()
     else:
         restaurant = db_session.query(Restaurant).get(restaurant_id)
 
@@ -108,7 +103,7 @@ async def restaurant(restaurant_id=0):
 
     return await render_template('restaurant_profile.html', title='Ресторан {}'.format(restaurant.name),
                                  logged_in=logged_in(), restaurant=restaurant, 
-                                 owner=(restaurant.id == get_current_restaurant(db_session).id
+                                 owner=(restaurant.id == get_current_restaurant().id
                                         if 'restaurant_id' in session else ''),
                                  basket_len=basket_len())
 
@@ -118,13 +113,11 @@ async def restaurant_edit():
     if not logged_in():
         return redirect(url_for('login'))
     
-    db_session = Session()
-    
     if request.method == 'POST':
         form = RestaurantEditForm(await request.form)
         
         if form.validate():
-            restaurant = get_current_restaurant(db_session)
+            restaurant = get_current_restaurant()
 
             restaurant.name = form.name.data or restaurant.name
             restaurant.phone_number = form.phone_number.data or restaurant.phone_number
