@@ -1,5 +1,6 @@
 import asks
 import math
+import asyncio
 
 from quart import session, redirect, url_for
 
@@ -17,6 +18,27 @@ def get_current_restaurant():
 
 def basket_len():
     return len(session.get('basket', []))
+
+
+async def get_available_restaurants(address, db_session):
+    restaurants = db_session.query(Restaurant).all()
+            
+    address_future = asyncio.ensure_future(get_toponym(address))
+    restaurants_futures = [asyncio.ensure_future(get_toponym(restaurant.address))
+                            for restaurant in restaurants]
+    address_toponym, *restaurants_toponyms = await asyncio.gather(address_future, *restaurants_futures)
+    
+    if not address_toponym:
+        return 
+    
+    available_restaurants = list()
+    
+    for count, restaurant_toponym in enumerate(restaurants_toponyms):
+        if restaurant_toponym:
+            if restaurants[count].serve_area >= toponyms_distance(address_toponym, restaurant_toponym):
+                available_restaurants.append(restaurants[count])
+    
+    return available_restaurants
 
 
 async def get_toponym(address):
