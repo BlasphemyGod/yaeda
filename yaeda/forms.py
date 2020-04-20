@@ -64,3 +64,7 @@ class RestaurantEditForm(Form):
 
 class OrdersReceiveForm(Form):
     phone_number = StringField('Номер телефона', [PhoneNumberValidator()])
+
+
+class RestaurantSelectionForm(Form):
+    address = StringField('Адрес', [DataRequired()])

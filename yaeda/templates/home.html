@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h6>Введи свой адрес ниже, чтобы мы могли подобрать доступные вам рестораны</h6>
+<form method="POST" style="width: 50%; margin-left: auto; margin-right: auto; padding: 10px">
+    {{ form.csrf_token }}
+    <div class="form-group">
+        {{ form.address.label }}
+        {{ form.address(class="form-control") }}
 
+        {% for error in form.address.errors %}
+        <span class="badge badge-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+
+    {% if message %}
+    <div class="alert alert-danger" role="alert" style="margin: 10px">{{ message }}</div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">Отправить</button>
+</form>
+{% if restaurants %}
+{% for restaurant in restaurants %}
+<hr>
+<h4><a href="/restaurant/{{ restaurant.id }}">{{ restaurant.name }}</a></h4>
+<h5><b>Адрес: </b>{{ restaurant.address }}</h5>
+<h5><b>Контактный телефон: </b>{{ restaurant.phone_number }}</h5>
+{% endfor %}
+{% endif %}
 {% endblock %}

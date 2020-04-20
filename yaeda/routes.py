@@ -4,8 +4,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import app
 from .db import db_session
 from .db.models import Customer, Restaurant, Order
-from .forms import RestaurantRegisterForm, RestaurantLoginForm, RestaurantEditForm
-from .helpers import get_current_restaurant, logged_in, basket_len
+from .forms import RestaurantRegisterForm, RestaurantLoginForm, RestaurantEditForm, RestaurantSelectionForm
+from .helpers import get_current_restaurant, logged_in, basket_len, toponyms_distance, get_toponym
+
+import asyncio
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -80,12 +82,48 @@ async def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/')
-@app.route('/home')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
 async def home():
+    if request.method == 'POST':
+        form = RestaurantSelectionForm(await request.form)
+        
+        if form.validate():
+            restaurants = db_session.query(Restaurant).all()
+            
+            address_future = asyncio.ensure_future(get_toponym(form.address.data))
+            restaurants_futures = [asyncio.ensure_future(get_toponym(restaurant.address))
+                                   for restaurant in restaurants]
+            address_toponym, *restaurants_toponyms = await asyncio.gather(address_future, *restaurants_futures)
+            
+            if not address_toponym:
+                return await render_template('home.html', title='Главная страница', logged_in=logged_in(),
+                                             basket_len=basket_len(), form=form, 
+                                             message='Не удалось определить ваш адрес')
+            
+            available_restaurants = list()
+            
+            for count, restaurant_toponym in enumerate(restaurants_toponyms):
+                if restaurant_toponym:
+                    if restaurants[count].serve_area >= toponyms_distance(address_toponym, restaurant_toponym):
+                        available_restaurants.append(restaurants[count])
+
+            if not available_restaurants:
+                return await render_template('home.html', title='Главная страница', logged_in=logged_in(),
+                                             basket_len=basket_len(), form=form,
+                                             message='Рядом с вами нет доступных ресторанов')
+
+            return await render_template('home.html', title='Главная страница', logged_in=logged_in(),
+                                         basket_len=basket_len(), restaurants=available_restaurants,
+                                         form=form)
+        
+        return await render_template('home.html', title='Главная страница', logged_in=logged_in(),
+                                     basket_len=basket_len(), form=form)
+    
+    form = RestaurantSelectionForm()
+    
     return await render_template('home.html', title='Главная страница', logged_in=logged_in(),
-                                 restaurant=(get_current_restaurant() if 'restaurant' in session else None),
-                                 basket_len=basket_len())
+                                 basket_len=basket_len(), form=form)
 
 
 @app.route('/restaurant')
