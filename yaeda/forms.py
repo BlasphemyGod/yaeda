@@ -12,8 +12,8 @@ class PhoneNumberValidator:
     def __init__(self, message='Номер телефона не подходит под шаблон +7**********'):
         self.message = message
     
-    def __call__(self, form, field, *args):
-        if not re.match(r'\+7\d{10}', field.data):
+    def __call__(self, form, field):
+        if not re.match(r'\+7\d{10}', field.data) and not re.match(r'8\d{10}', field.data):
             raise ValidationError(self.message)
         
         
@@ -52,7 +52,11 @@ class ProductForm(Form):
     
 class OrderForm(Form):
     phone_number = StringField('Номер телефона', [DataRequired(), PhoneNumberValidator()])
-    address = StringField('Адрес', [DataRequired()])
+    address_city = StringField('Город', [DataRequired()])
+    address_street = StringField('Улица', [DataRequired()])
+    address_house = StringField('Дом', [DataRequired()])
+    address_apartment = IntegerField('Номер квартиры', [DataRequired()])
+    description = StringField('Примечание к заказу')
 
 
 class RestaurantEditForm(Form):

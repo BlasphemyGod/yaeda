@@ -27,6 +27,9 @@ async def orders_template(**context):
 async def orders():
     if request.method == 'POST':
         form = OrdersReceiveForm(await request.form)
+        
+        if form.phone_number.data.startswith('8'):
+            form.phone_number.data = '+7' + form.phone_number.data[1:] 
 
         if form.validate():
             customer = db_session.query(Customer).filter(
@@ -46,8 +49,21 @@ async def orders():
                                          not_ready_orders=not_ready_orders)
 
     form = OrdersReceiveForm()
+    ready_orders = list()
+    not_ready_orders = list()
     
-    return await orders_template(form=form)
+    if 'phone_number' in session:
+        form.phone_number.data = session['phone_number']
+        
+        orders = db_session.query(Customer).filter(
+            Customer.phone_number == form.phone_number.data
+        ).first().orders
+
+        ready_orders = [order for order in orders if order.state == 'Выполнен']
+        not_ready_orders = [order for order in orders if order.state != 'Выполнен']
+    
+    return await orders_template(form=form, ready_orders=ready_orders, 
+                                 not_ready_orders=not_ready_orders)
 
 
 @blueprint.route('/order/make', methods=['GET', 'POST'])
@@ -57,6 +73,9 @@ async def order_make():
 
     if request.method == 'POST':
         form = OrderForm(await request.form)
+        
+        if form.phone_number.data.startswith('8'):
+            form.phone_number.data = '+7' + form.phone_number.data[1:]
 
         if form.validate():
             first_product = db_session.query(Product).get(
@@ -65,7 +84,9 @@ async def order_make():
             
             restaurant = first_product.restaurant
             
-            customer_future = asyncio.ensure_future(get_toponym(form.address.data))
+            customer_future = asyncio.ensure_future(get_toponym(' '.join((form.address_city.data,
+                                                                          form.address_street.data,
+                                                                          form.address_house.data))))
             restaurant_future = asyncio.ensure_future(get_toponym(restaurant.address))
             
             await asyncio.wait([customer_future, restaurant_future])
@@ -86,8 +107,9 @@ async def order_make():
             if not customer:
                 customer = Customer(phone_number=form.phone_number.data)
                 
-            order = Order(customer=customer, destination=customer_toponym['metaDataProperty']['GeocoderMetaData']['text'],
-                          restaurant=restaurant)
+            order = Order(customer=customer, destination=customer_toponym['metaDataProperty']['GeocoderMetaData']['text'] + 
+                          ', кв {}'.format(form.address_apartment.data),
+                          restaurant=restaurant, description=form.description.data)
             
             for product_id in session['basket']:
                 order_item = OrderItem(count=session['basket'][product_id],
@@ -97,9 +119,12 @@ async def order_make():
             db_session.commit()
             
             session['basket'].clear()
+            session['phone_number'] = form.phone_number.data
             session.modified = True
             
-            return await make_order_template(form=form, success=True, message='Заказ отправлен на обработку')
+            return await make_order_template(form=form, success=True, 
+                                             message='Заказ отправлен на обработку.' + 
+                                                     ' Наш оператор свяжется с вами для подтверждения заказа')
         
         return await make_order_template(form=form)
         

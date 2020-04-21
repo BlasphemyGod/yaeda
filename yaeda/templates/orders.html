@@ -35,6 +35,7 @@
             {% for order_item in order.order_items %}
             <h6>> {{ order_item.product.name }} {{order_item.count }}x{{ order_item.product.price }}</h6>
             {% endfor %}
+            <h6><b>Примечание: </b>{{ order.description }}</h6>
             {% endfor %}
         </div>
         <div class="col">
@@ -46,6 +47,7 @@
             {% for order_item in order.order_items %}
             <h6>> {{ order_item.product.name }} {{ order_item.count }}x{{ order_item.product.price }}</h6>
             {% endfor %}
+            <h6><b>Примечание: </b>{{ order.description }}</h6>
             <h6 align="center">Статус: {{ order.state }}</h6>
             {% endfor %}
         </div>
