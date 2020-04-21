@@ -4,7 +4,7 @@ import random
 import asyncio
 import datetime
 
-from .db.models *
+from .db.models import *
 from .db import db_session
 from .helpers import get_available_restaurants, get_toponym, toponyms_distance
 
