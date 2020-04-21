@@ -2,7 +2,7 @@ import re
 import aiovk
 import random
 import asyncio
-import datetime
+from datetime import datetime
 
 from .db.models import *
 from .db import db_session
@@ -16,7 +16,7 @@ sessions = dict()
 help_str = '/basket - посмотреть корзину\n' + \
            '/place - задать адрес для доставки и поиска ближайших ресторанов\n' + \
            '/find - вывести список доступных ресторанов\n' + \
-           '/select <число> - выбрать ресторан по его номеру\n' + \ 
+           '/select <число> - выбрать ресторан по его номеру\n' + \
            '/menu - посмотреть меню\n' + \
            '/add <номер товара> <кол-во> - добавить товар в корзину\n' + \
            '/del <номер товара> - удалить товар из корзины\n' + \
@@ -33,17 +33,17 @@ class States:
 
 class LastIDict(dict):
     def __init__(self, *args, **kwargs):
-        self.last_interaction = datetime.datetime.now()
+        self.last_interaction = datetime.now()
         
         super().__init__(*args, **kwargs)
     
     def __getitem__(self, item):
-        self.last_interaction = datetime.datetime.now()
+        self.last_interaction = datetime.now()
         
         return super().__getitem__(item)
     
     def __setitem__(self, item, value):
-        self.last_interaction = datetime.datetime.now()
+        self.last_interaction = datetime.now()
         
         super().__setitem__(item, value)
         
@@ -51,7 +51,7 @@ class LastIDict(dict):
 async def garbage_collector():
     while True:
         for session_key, session in sessions.items():
-            if (datetime.datetime.now() - session.last_interaction).total_seconds() > 600:
+            if (datetime.now() - session.last_interaction).total_seconds() > 600:
                 sessions.pop(session_key)
         
         await asyncio.sleep(30)
@@ -88,13 +88,16 @@ async def on_select(api, user_id, session, restaurant_id):
                                      session['address']['street'],
                                      session['address']['house']))
         
-        restaurant = db_session.query(restaurant).get(restaurant_id)
+        restaurant = db_session.query(Restaurant).get(restaurant_id)
         
         customer_toponym, restaurant_toponym = await asyncio.gather(get_toponym(customer_address),
                                                                     get_toponym(restaurant.address))
         
         if toponyms_distance(customer_toponym, restaurant_toponym) <= restaurant.serve_area:
             session['restaurant'] = restaurant_id
+            
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Выбран ресторан "{}"'.format(restaurant.name))
         else:
             await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
                                     message='Ресторан находится вне зоны досягаемости')
@@ -105,11 +108,11 @@ async def on_select(api, user_id, session, restaurant_id):
         
 async def on_menu(api, user_id, session):
     if session['restaurant']:
-        restaurant = db_session.query(restaurant).get(session['restaurant'])
+        restaurant = db_session.query(Restaurant).get(session['restaurant'])
         await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                                message='\n'.join('{} - - "{}" {} р.').format(
+                                message='\n'.join(('{} - - "{}" {} р.').format(
                                     product.id, product.name, product.price
-                                ) for product in restaurant.menu)
+                                ) for product in restaurant.menu))
     else:
         await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
                                 message='Сначала нужно выбрать ресторана командой /select. /help для помощи')
@@ -117,7 +120,7 @@ async def on_menu(api, user_id, session):
         
 async def on_add(api, user_id, session, product_id, count):
     if session['restaurant']:
-        restaurant = db_session.query(restaurant).get(session['restaurant'])
+        restaurant = db_session.query(Restaurant).get(session['restaurant'])
         product = db_session.query(Product).get(product_id)
         
         if product.restaurant.id != restaurant.id:
@@ -149,14 +152,14 @@ async def on_order(api, user_id, session, phone_number):
                                                     session['address']['house'],
                                                     session['address']['apartment'])
             
-            restaurant = db_session.query(restaurant).get(session['restaurant'])
+            restaurant = db_session.query(Restaurant).get(session['restaurant'])
             
             if phone_number.startswith('8'):
                 phone_number = phone_number.replace('8', '+7', 1)
 
             customer = db_session.query(Customer).filter(
                 Customer.phone_number == phone_number
-            )
+            ).first()
             
             if not customer:
                 customer = Customer(phone_number=phone_number)
@@ -164,7 +167,7 @@ async def on_order(api, user_id, session, phone_number):
             order = Order(destination=destination, restaurant=restaurant,
                           customer=customer)
 
-            products = db_session.query(Product).filter(Product.in_(list(session['basket']))).all()
+            products = db_session.query(Product).filter(Product.id.in_(list(map(int, session['basket'])))).all()
             
             if not all(product.restaurant.id == products[0].restaurant.id
                        for product in products):
@@ -219,6 +222,20 @@ async def on_message(api, message):
         if content == '/help':
             await on_help(api, user_id)
             
+        elif content == '/basket':
+            if not session['basket']:
+                await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                        message='Корзина пуста!')
+                return
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='\n'.join(
+                                        '{} - - "{}" {} шт'.format(
+                                            product_id, 
+                                            db_session.query(Product).get(product_id).name,
+                                            count    
+                                        ) for product_id, count in session['basket'].items()
+                                    ))
+            
         elif content == '/place':
             session['state'] = States.input_address_city
             await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
@@ -271,7 +288,7 @@ async def on_message(api, message):
             
             session['state'] = States.no_state
 
-            if not customer:
+            if not customer_toponym:
                 session['address']['city'] = ''
                 session['address']['street'] = ''
                 session['address']['house'] = ''
@@ -287,12 +304,12 @@ async def on_message(api, message):
 
 async def listen():
     asyncio.create_task(garbage_collector())
-    with aiovk.TokenSession(TOKEN) as vk_session:
+    async with aiovk.TokenSession(TOKEN) as vk_session:
         vk_session.API_VERSION = '5.100'
         api = aiovk.API(vk_session)
         long_poll = aiovk.longpoll.BotsLongPoll(vk_session, 2, 194445144)
         while True:
-            updates = await long_poll.wait()['updates']
+            updates = (await long_poll.wait())['updates']
             for event in updates:
                 if event['type'] == 'message_new':
                     asyncio.create_task(on_message(api, event['object']))

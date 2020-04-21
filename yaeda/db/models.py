@@ -68,7 +68,7 @@ class Order(Base):
     customer_id = Column(Integer, ForeignKey('users.id'))
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
     
-    description = Column(String, nullable=True)
+    description = Column(String, nullable=True, default='')
     destination = Column(String, nullable=False)
     state = Column(String, default='В обработке')
     date = Column(DateTime, default=datetime.now)
