@@ -256,7 +256,7 @@ async def on_message(api, message):
         elif re.match(r'/del \d+', content):
             await on_del(api, user_id, session, content.split()[1])
             
-        elif re.match(r'/order +7\d{10}', content) or re.match(r'/order 8\d{10}', content):
+        elif re.match(r'/order \+7\d{10}', content) or re.match(r'/order 8\d{10}', content):
             await on_order(api, user_id, session, content.split()[1])
     else:
         if session['state'] == States.input_address_city:
