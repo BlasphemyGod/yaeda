@@ -87,7 +87,6 @@ class Courier(Base):
 
     vk_id = Column(Integer, nullable=False)
     verified = Column(Integer, nullable=False, default=False)
-    verification_code = Column(Integer, nullable=False)
     address = Column(String, nullable=True)
     working = Column(Boolean, nullable=False, default=False)
 
