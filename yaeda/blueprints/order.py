@@ -4,7 +4,7 @@ import asyncio
 
 from yaeda.db import db_session
 from yaeda.db.models import Customer, Order, OrderItem, Restaurant, Product
-from yaeda.helpers import logged_in, basket_len, get_toponym, toponyms_distance, get_current_restaurant
+from yaeda.helpers import logged_in, basket_len, get_toponym, toponyms_distance, get_current_restaurant, courier_finding
 from yaeda.forms import OrdersReceiveForm, OrderForm
 
 
@@ -117,6 +117,8 @@ async def order_make():
                 db_session.add(order_item)
 
             db_session.commit()
+
+            asyncio.create_task(courier_finding(order.id))
             
             session['basket'].clear()
             session['phone_number'] = form.phone_number.data

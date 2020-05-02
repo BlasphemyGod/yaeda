@@ -5,7 +5,7 @@ import asyncio
 from quart import session, redirect, url_for
 
 from .db import db_session
-from .db.models import Restaurant
+from .db.models import Restaurant, Order, Courier
 
 
 def logged_in():
@@ -94,3 +94,14 @@ async def get_nearest_courier(restaurant):
             nearest_courier = courier
 
     return nearest_courier
+
+
+async def courier_finding(order_id):
+    while True:
+        order = db_session.query(Order).get(order_id)
+        restaurant = order.restaurant
+        courier = await get_nearest_courier(restaurant)
+        if courier:
+            courier.order = order
+            break
+        await asyncio.sleep(30)

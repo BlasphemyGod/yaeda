@@ -26,6 +26,7 @@ async def courier_new():
             courier = Courier(vk_id=form.vk_id.data)
 
             db_session.add(courier)
+            db_session.commit()
 
             return redirect('courier.courier_finish')
 
