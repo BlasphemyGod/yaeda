@@ -10,3 +10,4 @@ from yaeda.blueprints import *
 app.register_blueprint(menu_blueprint)
 app.register_blueprint(basket_blueprint)
 app.register_blueprint(order_blueprint)
+app.register_blueprint(courier_blueprint)

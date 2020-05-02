@@ -45,7 +45,7 @@ class ProductForm(Form):
     price = IntegerField('Цена в руб.', [DataRequired()])
     description = TextAreaField('Описание', [DataRequired()])
     
-    def validate_price(form, field):
+    def validate_price(self, field):
         if field.data < 0:
             raise ValidationError('Цена должна быть целым неотрицательным числом')
     
@@ -72,3 +72,7 @@ class OrdersReceiveForm(Form):
 
 class RestaurantSelectionForm(Form):
     address = StringField('Адрес', [DataRequired()])
+
+
+class CourierRegisterForm(Form):
+    vk_id = IntegerField('Идентификатор вконтакте', [DataRequired()])
