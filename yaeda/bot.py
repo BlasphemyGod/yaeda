@@ -110,7 +110,7 @@ async def on_menu(api, user_id, session):
     if session['restaurant']:
         restaurant = db_session.query(Restaurant).get(session['restaurant'])
         await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                                message='\n'.join(('{} - - "{}" {} р.').format(
+                                message='\n'.join('{} - - "{}" {} р.'.format(
                                     product.id, product.name, product.price
                                 ) for product in restaurant.menu))
     else:
