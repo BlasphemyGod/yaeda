@@ -25,7 +25,7 @@ async def get_available_restaurants(address, db_session):
             
     address_future = asyncio.ensure_future(get_toponym(address))
     restaurants_futures = [asyncio.ensure_future(get_toponym(restaurant.address))
-                            for restaurant in restaurants]
+                           for restaurant in restaurants]
     address_toponym, *restaurants_toponyms = await asyncio.gather(address_future, *restaurants_futures)
     
     if not address_toponym:
@@ -73,3 +73,24 @@ def toponyms_distance(toponym_1, toponym_2):
     distance = math.sqrt(dx * dx + dy * dy)
 
     return distance
+
+
+async def get_nearest_courier(restaurant):
+    available_couriers = [courier for courier in restaurant.couriers
+                          if courier.working and courier.order is None]
+
+    toponyms_futures = [asyncio.ensure_future(get_toponym(courier.address))
+                        for courier in available_couriers]
+
+    *couriers_toponyms, restaurant_toponym = await asyncio.gather(*toponyms_futures, get_toponym(restaurant.address))
+
+    lowest_distance = None
+    nearest_courier = None
+
+    for courier, courier_toponym in zip(available_couriers, couriers_toponyms):
+        distance = toponyms_distance(restaurant_toponym, courier_toponym)
+        if lowest_distance is None or distance < lowest_distance:
+            lowest_distance = distance
+            nearest_courier = courier
+
+    return nearest_courier

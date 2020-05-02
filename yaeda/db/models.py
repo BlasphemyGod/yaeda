@@ -32,6 +32,7 @@ class Restaurant(Base):
     
     menu = relation('Product', back_populates='restaurant')
     orders = relation('Order', back_populates='restaurant')
+    couriers = relation('Courier', back_populates='restaurant')
     
     
 class Product(Base):
@@ -84,6 +85,7 @@ class Courier(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     order_id = Column(Integer, ForeignKey('orders.id'), nullable=True)
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'), nullable=False)
 
     vk_id = Column(Integer, nullable=False)
     verified = Column(Integer, nullable=False, default=False)
@@ -91,3 +93,4 @@ class Courier(Base):
     working = Column(Boolean, nullable=False, default=False)
 
     order = relation(Order, back_populates='courier', nullable=True)
+    restaurant = relation(Restaurant, back_populates='couriers', nullable=False)
