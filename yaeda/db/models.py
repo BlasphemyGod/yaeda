@@ -91,6 +91,7 @@ class Courier(Base):
     verified = Column(Integer, nullable=False, default=False)
     address = Column(String, nullable=True)
     working = Column(Boolean, nullable=False, default=False)
+    notified = Column(Boolean, nullable=False, default=False)
 
     order = relation(Order, back_populates='courier', nullable=True)
     restaurant = relation(Restaurant, back_populates='couriers', nullable=False)

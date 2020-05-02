@@ -103,5 +103,6 @@ async def courier_finding(order_id):
         courier = await get_nearest_courier(restaurant)
         if courier:
             courier.order = order
+            courier.notified = False
             break
         await asyncio.sleep(30)
