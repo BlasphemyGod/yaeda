@@ -223,7 +223,10 @@ async def on_verification(api, user_id, session):
             db_session.commit()
 
             await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                                    message='Ваш аккаунт успешно подтверждён!')
+                                    message='Ваш аккаунт успешно подтверждён!\n'
+                                            'Чтобы начать рабочий день, напиши /begin <адрес>\n'
+                                            'Чтобы закончить рабочий день, напиши /end\n'
+                                            'Чтобы пометить заказ как выполненный, напиши /done')
 
 
 async def on_done(api, user_id, session):
