@@ -11,26 +11,28 @@
         </div>
     </div>
 
-    {% if owner %}
     <div class="row">
+        {% if owner %}
         <div class="col">
             <center>
                 <a class="btn btn-warning" href="/restaurant/edit">Изменить</a>
             </center>
         </div>
+        {% endif %}
         <div class="col">
             <center>
                 <a class="btn btn-success" href="/courier/new?restaurant={{ restaurant.id }}">Стать курьером</a>
             </center>
         </div>
+        {% if owner %}
         <div class="col">
             <center>
                 <a class="btn btn-primary" href="/restaurant/orders">Заказы</a>
             </center>
         </div>
+        {% endif %}
     </div>
     <hr>
-    {% endif %}
 
     <h3 align="center">Меню</h3>
 

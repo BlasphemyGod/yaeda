@@ -62,11 +62,11 @@ async def courier_notificator(api):
         for courier in db_session.query(Courier).all():
             if courier.working and courier.order and not courier.notified:
                 courier.notified = True
-                api.messages.send(user_id=courier.vk_id, random_id=random.randint(0, 2 ** 64),
-                                  message=('Новый заказ!\n' +
-                                           'Адрес: {}\n' +
-                                           'Телефон заказчика: {}').format(courier.order.description,
-                                                                           courier.order.customer.phone_number))
+                await api.messages.send(user_id=courier.vk_id, random_id=random.randint(0, 2 ** 64),
+                                        message=('Новый заказ!\n' +
+                                                 'Адрес: {}\n' +
+                                                 'Телефон заказчика: {}').format(courier.order.destination,
+                                                                                 courier.order.customer.phone_number))
         await asyncio.sleep(30)
         
         
@@ -210,28 +210,28 @@ async def on_verification(api, user_id, session):
     courier = db_session.query(Courier).filter(Courier.vk_id == user_id).first()
 
     if not courier:
-        api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                          message='Эта команда используется курьерами!')
+        await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                message='Эта команда используется курьерами!')
     else:
         if courier.verified:
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Вы уже подтвердили свой аккаунт')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Вы уже подтвердили свой аккаунт')
         else:
             courier.verified = True
 
             db_session.merge(courier)
             db_session.commit()
 
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Ваш аккаунт успешно подтверждён!')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Ваш аккаунт успешно подтверждён!')
 
 
 async def on_done(api, user_id, session):
     courier = db_session.query(Courier).filter(Courier.vk_id == user_id).first()
 
     if not courier:
-        api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                          message='Эта команда только для курьеров!')
+        await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                message='Эта команда только для курьеров!')
     else:
         if courier.working and courier.order:
             courier.order.state = 'Выполнен'
@@ -240,27 +240,27 @@ async def on_done(api, user_id, session):
             db_session.merge(courier)
             db_session.commit()
 
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Вы пометили заказ как выполненный. Спасибо за работу!')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Вы пометили заказ как выполненный. Спасибо за работу!')
         else:
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='В данный момент вы не выполняете заказ')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='В данный момент вы не выполняете заказ')
 
 
 async def on_begin(api, user_id, session, address):
     courier = db_session.query(Courier).filter(Courier.vk_id == user_id).first()
 
     if not courier:
-        api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                          message='Эта команда только для курьеров!')
+        await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                message='Эта команда только для курьеров!')
     else:
         if not courier.working:
             courier.working = True
 
             toponym = await get_toponym(address)
             if not toponym:
-                api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                                  message='Неверный адрес. Попробуйте снова')
+                await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                        message='Неверный адрес. Попробуйте снова')
                 return
 
             courier.address = address
@@ -268,19 +268,19 @@ async def on_begin(api, user_id, session, address):
             db_session.merge(courier)
             db_session.commit()
 
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Рабочий день начался!')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Рабочий день начался!')
         else:
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Рабочий день уже начат!')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Рабочий день уже начат!')
 
 
 async def on_end(api, user_id, session):
     courier = db_session.query(Courier).filter(Courier.vk_id == user_id).first()
 
     if not courier:
-        api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                          message='Эта команда только для курьеров!')
+        await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                message='Эта команда только для курьеров!')
     else:
         if courier.working:
             courier.working = False
@@ -288,11 +288,11 @@ async def on_end(api, user_id, session):
             db_session.merge(courier)
             db_session.commit()
 
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Рабочий день закончился!')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Рабочий день закончился!')
         else:
-            api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
-                              message='Рабочий день ещё не начинался!')
+            await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                    message='Рабочий день ещё не начинался!')
         
         
 async def on_message(api, message):

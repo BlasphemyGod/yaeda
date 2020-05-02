@@ -2,8 +2,8 @@ from wtforms import Form, StringField, IntegerField, SubmitField, TextAreaField,
 from wtforms.validators import DataRequired
 from wtforms import ValidationError
 
-from .db import Session
-from .db.models import Restaurant
+from .db import db_session
+from .db.models import Restaurant, Courier
 
 import re
 
@@ -22,7 +22,7 @@ class UniqueRestaurantName:
         self.message = message
         
     def __call__(self, form, field):
-        if Session().query(Restaurant).filter(Restaurant.name == field.data).first():
+        if db_session.query(Restaurant).filter(Restaurant.name == field.data).first():
             raise ValidationError(self.message)
 
 
@@ -76,3 +76,7 @@ class RestaurantSelectionForm(Form):
 
 class CourierRegisterForm(Form):
     vk_id = IntegerField('Идентификатор вконтакте', [DataRequired()])
+
+    def validate_vk_id(self, field):
+        if db_session.query(Courier).filter(Courier.vk_id == field.data).first():
+            raise ValidationError('Курьер с таким идентификатором уже существует')

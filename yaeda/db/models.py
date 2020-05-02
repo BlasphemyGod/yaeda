@@ -77,7 +77,7 @@ class Order(Base):
     customer = relation(Customer, back_populates='orders')
     restaurant = relation(Restaurant, back_populates='orders')
     order_items = relation(OrderItem, back_populates='order')
-    courier = relation('Courier', back_populates='order', nullable=True)
+    courier = relation('Courier', back_populates='order')
 
 
 class Courier(Base):
@@ -87,11 +87,11 @@ class Courier(Base):
     order_id = Column(Integer, ForeignKey('orders.id'), nullable=True)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'), nullable=False)
 
-    vk_id = Column(Integer, nullable=False)
+    vk_id = Column(Integer, nullable=False, unique=True)
     verified = Column(Integer, nullable=False, default=False)
     address = Column(String, nullable=True)
     working = Column(Boolean, nullable=False, default=False)
     notified = Column(Boolean, nullable=False, default=False)
 
-    order = relation(Order, back_populates='courier', nullable=True)
-    restaurant = relation(Restaurant, back_populates='couriers', nullable=False)
+    order = relation(Order, back_populates='courier')
+    restaurant = relation(Restaurant, back_populates='couriers')

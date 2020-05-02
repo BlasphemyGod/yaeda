@@ -4,12 +4,13 @@
 <h1 align="center">Стать курьером ресторана {{ restaurant.name }}</h1>
 <form method="POST" style="margin-left: auto; margin-right: auto; width: 50%">
     {{ form.csrf_token }}
-
-    {{ form.vk_id.label }}
-    {{ form.vk_id(class="form-control") }}
-    {% for error in form.vk_id.errors %}
-    <span class="badge badge-danger">{{ error }}</span>
-    {% endfor %}
-    <button type="submit">Отправить</button>
+    <div class="form-group">
+        {{ form.vk_id.label }}
+        {{ form.vk_id(class="form-control") }}
+        {% for error in form.vk_id.errors %}
+        <span class="badge badge-danger">{{ error }}</span>
+        {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary">Отправить</button>
 </form>
 {% endblock %}
