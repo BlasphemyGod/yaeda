@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relation
 
 from datetime import datetime
@@ -76,3 +76,19 @@ class Order(Base):
     customer = relation(Customer, back_populates='orders')
     restaurant = relation(Restaurant, back_populates='orders')
     order_items = relation(OrderItem, back_populates='order')
+    courier = relation('Courier', back_populates='order', nullable=True)
+
+
+class Courier(Base):
+    __tablename__ = 'couriers'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    order_id = Column(Integer, ForeignKey('orders.id'), nullable=True)
+
+    vk_id = Column(Integer, nullable=False)
+    verified = Column(Integer, nullable=False, default=False)
+    verification_code = Column(Integer, nullable=False)
+    address = Column(String, nullable=True)
+    working = Column(Boolean, nullable=False, default=False)
+
+    order = relation(Order, back_populates='courier', nullable=True)

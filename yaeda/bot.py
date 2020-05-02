@@ -302,6 +302,7 @@ async def on_message(api, message):
             await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
                                     message='Адрес успешно выбран')
 
+
 async def listen():
     asyncio.create_task(garbage_collector())
     async with aiovk.TokenSession(TOKEN) as vk_session:
