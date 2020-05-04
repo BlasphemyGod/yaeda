@@ -50,8 +50,8 @@ class LastIDict(dict):
         
 async def garbage_collector():
     while True:
-        for session_key, session in sessions.items():
-            if (datetime.now() - session.last_interaction).total_seconds() > 600:
+        for session_key in list(sessions):
+            if (datetime.now() - sessions[session_key].last_interaction).total_seconds() > 600:
                 sessions.pop(session_key)
         
         await asyncio.sleep(30)
