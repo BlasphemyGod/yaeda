@@ -6,7 +6,7 @@ from datetime import datetime
 
 from .db.models import *
 from .db import db_session
-from .helpers import get_available_restaurants, get_toponym, toponyms_distance
+from .helpers import get_available_restaurants, get_toponym, toponyms_distance, courier_finding
 
 
 TOKEN = '1bdf4d1369c07996b7a2a5db2653bb789d0aa9420e1df2e57e657dbddc302a78da2ce9844d9e04180323a'
@@ -194,7 +194,9 @@ async def on_order(api, user_id, session, phone_number):
 
             db_session.add(order)
             db_session.commit()
-            
+
+            asyncio.create_task(courier_finding(order.id))
+
             await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
                                     message='Заказ отправлен на обработку. ' +
                                             'Скоро с вами свяжется оператор для подтверждения заказа')
