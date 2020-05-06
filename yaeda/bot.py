@@ -287,6 +287,10 @@ async def on_end(api, user_id, session):
         await api.messages.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
                                 message='Эта команда только для курьеров!')
     else:
+        if courier.order:
+            await db_session.send(user_id=user_id, random_id=random.randint(0, 2 ** 64),
+                                  message='Сначала нужно выполнить заказ!')
+            return
         if courier.working:
             courier.working = False
 
