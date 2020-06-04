@@ -9,7 +9,8 @@ from .db import db_session
 from .helpers import get_available_restaurants, get_toponym, toponyms_distance, courier_finding
 
 
-TOKEN = '1bdf4d1369c07996b7a2a5db2653bb789d0aa9420e1df2e57e657dbddc302a78da2ce9844d9e04180323a'
+TOKEN = ''
+GROUP_ID = 0
 sessions = dict()
 
 
@@ -433,7 +434,7 @@ async def listen():
         vk_session.API_VERSION = '5.100'
         api = aiovk.API(vk_session)
         asyncio.create_task(courier_notificator(api))
-        long_poll = aiovk.longpoll.BotsLongPoll(vk_session, 2, 194445144)
+        long_poll = aiovk.longpoll.BotsLongPoll(vk_session, 2, GROUP_ID)
         while True:
             updates = (await long_poll.wait())['updates']
             for event in updates:
